@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.toQueryString = exports.checkOptions = exports.wrapSendRequest = exports.constructRequestData = exports.optionallyCallCallback = exports.getFullURL = exports.getURLPrefix = exports.netHashOptions = exports.getDefaultPort = undefined;
+exports.toQueryString = exports.checkOptions = exports.wrapSendRequest = exports.getFullURL = exports.getURLPrefix = exports.netHashOptions = exports.getDefaultPort = undefined;
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -58,7 +58,8 @@ var netHashOptions = exports.netHashOptions = function netHashOptions(_ref) {
 		os: 'lisk-js-api',
 		version: '1.0.0',
 		minVersion: '>=0.5.0',
-		port: port
+		port: port,
+		Accept: 'application/json'
 	};
 
 	return {
@@ -87,27 +88,18 @@ var getFullURL = exports.getFullURL = function getFullURL(_ref3) {
 	return getURLPrefix({ ssl: ssl }) + '://' + nodeUrl;
 };
 
-var optionallyCallCallback = exports.optionallyCallCallback = function optionallyCallCallback(callback, result) {
-	if (typeof callback === 'function') {
-		callback(result);
-	}
-	return result;
-};
-
-var constructRequestData = exports.constructRequestData = function constructRequestData(providedObject, optionsOrCallback) {
-	var providedOptions = typeof optionsOrCallback !== 'function' && typeof optionsOrCallback !== 'undefined' ? optionsOrCallback : {};
-	return (0, _assign2.default)({}, providedOptions, providedObject);
-};
-
 var wrapSendRequest = exports.wrapSendRequest = function wrapSendRequest(method, endpoint, getDataFn) {
-	return function wrappedSendRequest(value, optionsOrCallback, callbackIfOptions) {
-		var callback = callbackIfOptions || optionsOrCallback;
-		var data = constructRequestData(getDataFn(value, optionsOrCallback), optionsOrCallback);
-		return this.sendRequest(method, endpoint, data, callback);
+	return function wrappedSendRequest(value, options) {
+		var providedOptions = options || {};
+		var providedData = getDataFn(value, providedOptions);
+		var data = (0, _assign2.default)({}, providedData, providedOptions);
+		return this.sendRequest(method, endpoint, data);
 	};
 };
 
-var checkOptions = exports.checkOptions = function checkOptions(options) {
+var checkOptions = exports.checkOptions = function checkOptions() {
+	var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
 	(0, _entries2.default)(options).forEach(function (_ref4) {
 		var _ref5 = (0, _slicedToArray3.default)(_ref4, 2),
 		    key = _ref5[0],

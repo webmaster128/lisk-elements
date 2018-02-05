@@ -130,37 +130,41 @@ var LiskAPI = function () {
 		}
 	}, {
 		key: 'broadcastTransactions',
-		value: function broadcastTransactions(transactions, callback) {
+		value: function broadcastTransactions(transactions) {
 			return privateApi.sendRequestPromise.call(this, _constants.POST, 'transactions', transactions).then(function (result) {
 				return result.body;
-			}).then(utils.optionallyCallCallback.bind(null, callback));
+			});
 		}
 	}, {
 		key: 'broadcastTransaction',
-		value: function broadcastTransaction(transaction, callback) {
-			return this.broadcastTransactions([transaction], callback);
+		value: function broadcastTransaction(transaction) {
+			return this.broadcastTransactions([transaction]);
 		}
 	}, {
 		key: 'broadcastSignatures',
-		value: function broadcastSignatures(signatures, callback) {
+		value: function broadcastSignatures(signatures) {
 			return privateApi.sendRequestPromise.call(this, _constants.POST, 'signatures', { signatures: signatures }).then(function (result) {
 				return result.body;
-			}).then(utils.optionallyCallCallback.bind(null, callback));
+			});
 		}
 	}, {
 		key: 'sendRequest',
-		value: function sendRequest(requestMethod, requestType, optionsOrCallback, callbackIfOptions) {
-			var callback = callbackIfOptions || optionsOrCallback;
-			var options = typeof optionsOrCallback !== 'function' && typeof optionsOrCallback !== 'undefined' ? utils.checkOptions(optionsOrCallback) : {};
+		value: function sendRequest(requestMethod, requestType, options) {
+			var checkedOptions = utils.checkOptions(options);
 
-			return privateApi.sendRequestPromise.call(this, requestMethod, requestType, options).then(function (result) {
+			return privateApi.sendRequestPromise.call(this, requestMethod, requestType, checkedOptions).then(function (result) {
 				return result.body;
-			}).then(privateApi.handleTimestampIsInFutureFailures.bind(this, requestMethod, requestType, options)).catch(privateApi.handleSendRequestFailures.bind(this, requestMethod, requestType, options)).then(utils.optionallyCallCallback.bind(null, callback));
+			}).then(privateApi.handleTimestampIsInFutureFailures.bind(this, requestMethod, requestType, checkedOptions)).catch(privateApi.handleSendRequestFailures.bind(this, requestMethod, requestType, checkedOptions));
 		}
 	}, {
 		key: 'transferLSK',
-		value: function transferLSK(recipientId, amount, passphrase, secondPassphrase, callback) {
-			return this.sendRequest(_constants.POST, 'transactions', { recipientId: recipientId, amount: amount, passphrase: passphrase, secondPassphrase: secondPassphrase }, callback);
+		value: function transferLSK(recipientId, amount, passphrase, secondPassphrase) {
+			return this.sendRequest(_constants.POST, 'transactions', {
+				recipientId: recipientId,
+				amount: amount,
+				passphrase: passphrase,
+				secondPassphrase: secondPassphrase
+			});
 		}
 	}]);
 	return LiskAPI;

@@ -46,7 +46,7 @@ var signMessageWithPassphrase = exports.signMessageWithPassphrase = function sig
 	return {
 		message: message,
 		publicKey: (0, _convert.bufferToHex)(publicKey),
-		signature: Buffer.from(signature).toString('base64')
+		signature: (0, _convert.bufferToHex)(signature)
 	};
 };
 
@@ -55,8 +55,8 @@ var verifyMessageWithPublicKey = exports.verifyMessageWithPublicKey = function v
 	    signature = _ref.signature,
 	    publicKey = _ref.publicKey;
 
-	var msgBytes = Buffer.from(message);
-	var signatureBytes = Buffer.from(signature, 'base64');
+	var msgBytes = Buffer.from(message, 'utf8');
+	var signatureBytes = (0, _convert.hexToBuffer)(signature);
 	var publicKeyBytes = (0, _convert.hexToBuffer)(publicKey);
 
 	if (publicKeyBytes.length !== 32) {
@@ -82,8 +82,8 @@ var signMessageWithTwoPassphrases = exports.signMessageWithTwoPassphrases = func
 		message: message,
 		publicKey: (0, _convert.bufferToHex)(keypairBytes.publicKey),
 		secondPublicKey: (0, _convert.bufferToHex)(secondKeypairBytes.publicKey),
-		signature: Buffer.from(signature).toString('base64'),
-		secondSignature: Buffer.from(secondSignature).toString('base64')
+		signature: (0, _convert.bufferToHex)(signature),
+		secondSignature: (0, _convert.bufferToHex)(secondSignature)
 	};
 };
 
@@ -94,11 +94,11 @@ var verifyMessageWithTwoPublicKeys = exports.verifyMessageWithTwoPublicKeys = fu
 	    publicKey = _ref2.publicKey,
 	    secondPublicKey = _ref2.secondPublicKey;
 
-	var messageBytes = Buffer.from(message);
-	var signatureBytes = Buffer.from(signature, 'base64');
-	var secondSignatureBytes = Buffer.from(secondSignature, 'base64');
-	var publicKeyBytes = Buffer.from((0, _convert.hexToBuffer)(publicKey));
-	var secondPublicKeyBytes = Buffer.from((0, _convert.hexToBuffer)(secondPublicKey));
+	var messageBytes = Buffer.from(message, 'utf8');
+	var signatureBytes = (0, _convert.hexToBuffer)(signature);
+	var secondSignatureBytes = (0, _convert.hexToBuffer)(secondSignature);
+	var publicKeyBytes = (0, _convert.hexToBuffer)(publicKey);
+	var secondPublicKeyBytes = (0, _convert.hexToBuffer)(secondPublicKey);
 
 	if (signatureBytes.length !== naclInstance.crypto_sign_BYTES) {
 		throw new Error('Invalid first signature length, expected 64-byte signature');
