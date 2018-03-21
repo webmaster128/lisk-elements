@@ -119,8 +119,10 @@ var getAssetDataForCreateDappTransaction = exports.getAssetDataForCreateDappTran
 
 	var nameBuffer = Buffer.from(name, 'utf8');
 	var linkBuffer = Buffer.from(link, 'utf8');
-	var typeBuffer = Buffer.alloc(4, type);
-	var categoryBuffer = Buffer.alloc(4, category);
+	var typeBuffer = Buffer.alloc(4);
+	typeBuffer.writeIntLE(type, 0);
+	var categoryBuffer = Buffer.alloc(4);
+	categoryBuffer.writeIntLE(category, 0);
 
 	var descriptionBuffer = description ? Buffer.from(description, 'utf8') : Buffer.alloc(0);
 	var tagsBuffer = tags ? Buffer.from(tags, 'utf8') : Buffer.alloc(0);

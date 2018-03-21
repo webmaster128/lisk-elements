@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getPassphraseValidationErrors = exports.locateWhitespaces = exports.locateUppercaseCharacters = exports.countUppercaseCharacters = exports.countPassphraseWords = exports.countPassphraseWhitespaces = undefined;
+exports.getPassphraseValidationErrors = exports.locateConsecutiveWhitespaces = exports.locateUppercaseCharacters = exports.countUppercaseCharacters = exports.countPassphraseWords = exports.countPassphraseWhitespaces = undefined;
 
 var _bip = require('bip39');
 
@@ -52,7 +52,7 @@ var locateUppercaseCharacters = exports.locateUppercaseCharacters = function loc
 	return positions;
 };
 
-var locateWhitespaces = exports.locateWhitespaces = function locateWhitespaces(passphrase) {
+var locateConsecutiveWhitespaces = exports.locateConsecutiveWhitespaces = function locateConsecutiveWhitespaces(passphrase) {
 	var positions = [];
 	var passphraseLength = passphrase.length;
 	var lastIndex = passphraseLength - 1;
@@ -98,7 +98,7 @@ var getPassphraseValidationErrors = exports.getPassphraseValidationErrors = func
 			message: 'Passphrase contains ' + whiteSpacesInPassphrase + ' whitespaces instead of expected ' + expectedWhitespaces + '. Please check the passphrase.',
 			expected: expectedWhitespaces,
 			actual: whiteSpacesInPassphrase,
-			location: locateWhitespaces(passphrase)
+			location: locateConsecutiveWhitespaces(passphrase)
 		};
 		errors.push(whiteSpaceError);
 	}

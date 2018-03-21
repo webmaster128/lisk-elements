@@ -32,7 +32,7 @@ var wrapTransactionCreator = function wrapTransactionCreator(transactionCreator)
 
 		var transaction = (0, _assign2.default)({
 			amount: '0',
-			recipientId: null,
+			recipientId: '',
 			senderPublicKey: senderPublicKey,
 			timestamp: timestamp
 		}, transactionCreator(transactionParameters));

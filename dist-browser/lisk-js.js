@@ -443,9 +443,26 @@ var _popsicle = require('popsicle');
 
 var popsicle = _interopRequireWildcard(_popsicle);
 
+var _constants = require('./constants');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/*
+ * Copyright © 2017 Lisk Foundation
+ *
+ * See the LICENSE file at the top-level directory of this distribution
+ * for licensing information.
+ *
+ * Unless otherwise agreed in a custom licensing agreement with the Lisk Foundation,
+ * no part of this software, including this file, may be copied, modified,
+ * propagated, or distributed except according to the terms contained in the
+ * LICENSE file.
+ *
+ * Removal or modification of this copyright notice is prohibited.
+ *
+ */
 
 var APIResource = function () {
 	function APIResource(apiClient) {
@@ -463,20 +480,22 @@ var APIResource = function () {
 		value: function request(req, retry) {
 			var _this = this;
 
+			var retryCount = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+
 			var request = popsicle.request(req).use(popsicle.plugins.parse(['json', 'urlencoded'])).then(function (res) {
 				return res.body;
 			});
 
 			if (retry) {
 				request.catch(function (err) {
-					return _this.handleRetry(err, req);
+					return _this.handleRetry(err, req, retryCount);
 				});
 			}
 			return request;
 		}
 	}, {
 		key: 'handleRetry',
-		value: function handleRetry(error, req) {
+		value: function handleRetry(error, req, retryCount) {
 			var _this2 = this;
 
 			if (this.apiClient.hasAvailableNodes()) {
@@ -485,15 +504,13 @@ var APIResource = function () {
 				}).then(function () {
 					if (_this2.apiClient.randomizeNodes) {
 						_this2.apiClient.banActiveNodeAndSelect();
+					} else if (retryCount > _constants.API_RECONNECT_MAX_RETRY_COUNT) {
+						throw error;
 					}
-					return _this2.request(req, true);
+					return _this2.request(req, true, retryCount + 1);
 				});
 			}
-			return _promise2.default.resolve({
-				success: false,
-				error: error,
-				message: 'Could not create an HTTP request to any known nodes.'
-			});
+			return _promise2.default.reject(error);
 		}
 	}, {
 		key: 'headers',
@@ -507,20 +524,7 @@ var APIResource = function () {
 		}
 	}]);
 	return APIResource;
-}(); /*
-      * Copyright © 2017 Lisk Foundation
-      *
-      * See the LICENSE file at the top-level directory of this distribution
-      * for licensing information.
-      *
-      * Unless otherwise agreed in a custom licensing agreement with the Lisk Foundation,
-      * no part of this software, including this file, may be copied, modified,
-      * propagated, or distributed except according to the terms contained in the
-      * LICENSE file.
-      *
-      * Removal or modification of this copyright notice is prohibited.
-      *
-      */
+}();
 
 exports.default = APIResource;/* This code was injected by Rewireify */
 if ((typeof module.exports).match(/object|function/) && 
@@ -596,7 +600,7 @@ Object.defineProperty(module.exports, '__set__', { value: function __set__() {
 }, writable: true });
 }
 
-},{"babel-runtime/core-js/promise":74,"babel-runtime/helpers/classCallCheck":77,"babel-runtime/helpers/createClass":78,"popsicle":317}],4:[function(require,module,exports){
+},{"./constants":4,"babel-runtime/core-js/promise":74,"babel-runtime/helpers/classCallCheck":77,"babel-runtime/helpers/createClass":78,"popsicle":317}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -618,7 +622,8 @@ Object.defineProperty(exports, "__esModule", {
  */
 var GET = exports.GET = 'GET';
 var POST = exports.POST = 'POST';
-var PUT = exports.PUT = 'PUT';/* This code was injected by Rewireify */
+var PUT = exports.PUT = 'PUT';
+var API_RECONNECT_MAX_RETRY_COUNT = exports.API_RECONNECT_MAX_RETRY_COUNT = 3;/* This code was injected by Rewireify */
 if ((typeof module.exports).match(/object|function/) && 
 Object.isExtensible(module.exports)) {
 Object.defineProperty(module.exports, '__get__', { value: function __get__() {
@@ -841,13 +846,13 @@ var AccountsResource = function (_APIResource) {
 			method: _constants.GET
 		}).bind(_this);
 
-		_this.getMultisignatureGroup = (0, _api_method2.default)({
+		_this.getMultisignatureGroups = (0, _api_method2.default)({
 			method: _constants.GET,
 			path: '/{address}/multisignature_groups',
 			urlParams: ['address']
 		}).bind(_this);
 
-		_this.getMultisignatureMembership = (0, _api_method2.default)({
+		_this.getMultisignatureMemberships = (0, _api_method2.default)({
 			method: _constants.GET,
 			path: '/{address}/multisignature_memberships',
 			urlParams: ['address']
@@ -1289,9 +1294,9 @@ var DelegatesResource = function (_APIResource) {
 			path: '/forgers'
 		}).bind(_this);
 
-		_this.getForgingStats = (0, _api_method2.default)({
+		_this.getForgingStatistics = (0, _api_method2.default)({
 			method: _constants.GET,
-			path: '/{address}/forging_stats',
+			path: '/{address}/forging_statistics',
 			urlParams: ['address']
 		}).bind(_this);
 		return _this;
@@ -2646,6 +2651,7 @@ var getFirstEightBytesReversed = exports.getFirstEightBytesReversed = function g
 };
 
 var toAddress = exports.toAddress = function toAddress(buffer) {
+	if (!Buffer.from(buffer).slice(0, 8).equals(buffer)) throw new Error('The buffer for Lisk addresses must not have more than 8 bytes');
 	return bufferToBigNumberString(buffer) + 'L';
 };
 
@@ -3905,7 +3911,7 @@ Object.defineProperty(module.exports, '__set__', { value: function __set__() {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getPassphraseValidationErrors = exports.locateWhitespaces = exports.locateUppercaseCharacters = exports.countUppercaseCharacters = exports.countPassphraseWords = exports.countPassphraseWhitespaces = undefined;
+exports.getPassphraseValidationErrors = exports.locateConsecutiveWhitespaces = exports.locateUppercaseCharacters = exports.countUppercaseCharacters = exports.countPassphraseWords = exports.countPassphraseWhitespaces = undefined;
 
 var _bip = require('bip39');
 
@@ -3954,7 +3960,7 @@ var locateUppercaseCharacters = exports.locateUppercaseCharacters = function loc
 	return positions;
 };
 
-var locateWhitespaces = exports.locateWhitespaces = function locateWhitespaces(passphrase) {
+var locateConsecutiveWhitespaces = exports.locateConsecutiveWhitespaces = function locateConsecutiveWhitespaces(passphrase) {
 	var positions = [];
 	var passphraseLength = passphrase.length;
 	var lastIndex = passphraseLength - 1;
@@ -4000,7 +4006,7 @@ var getPassphraseValidationErrors = exports.getPassphraseValidationErrors = func
 			message: 'Passphrase contains ' + whiteSpacesInPassphrase + ' whitespaces instead of expected ' + expectedWhitespaces + '. Please check the passphrase.',
 			expected: expectedWhitespaces,
 			actual: whiteSpacesInPassphrase,
-			location: locateWhitespaces(passphrase)
+			location: locateConsecutiveWhitespaces(passphrase)
 		};
 		errors.push(whiteSpaceError);
 	}
@@ -5704,8 +5710,10 @@ var getAssetDataForCreateDappTransaction = exports.getAssetDataForCreateDappTran
 
 	var nameBuffer = Buffer.from(name, 'utf8');
 	var linkBuffer = Buffer.from(link, 'utf8');
-	var typeBuffer = Buffer.alloc(4, type);
-	var categoryBuffer = Buffer.alloc(4, category);
+	var typeBuffer = Buffer.alloc(4);
+	typeBuffer.writeIntLE(type, 0);
+	var categoryBuffer = Buffer.alloc(4);
+	categoryBuffer.writeIntLE(category, 0);
 
 	var descriptionBuffer = description ? Buffer.from(description, 'utf8') : Buffer.alloc(0);
 	var tagsBuffer = tags ? Buffer.from(tags, 'utf8') : Buffer.alloc(0);
@@ -7032,7 +7040,7 @@ var wrapTransactionCreator = function wrapTransactionCreator(transactionCreator)
 
 		var transaction = (0, _assign2.default)({
 			amount: '0',
-			recipientId: null,
+			recipientId: '',
 			senderPublicKey: senderPublicKey,
 			timestamp: timestamp
 		}, transactionCreator(transactionParameters));
@@ -40892,7 +40900,7 @@ module.exports={
         "spec": ">=6.0.0 <7.0.0",
         "type": "range"
       },
-      "/Users/tobias/GitHub/lisk-js/node_modules/browserify-sign"
+      "/Users/shuse2/Documents/10_lisk/lisk-js/node_modules/browserify-sign"
     ]
   ],
   "_from": "elliptic@>=6.0.0 <7.0.0",
@@ -40927,7 +40935,7 @@ module.exports={
   "_shasum": "cac9af8762c85836187003c8dfe193e5e2eae5df",
   "_shrinkwrap": null,
   "_spec": "elliptic@^6.0.0",
-  "_where": "/Users/tobias/GitHub/lisk-js/node_modules/browserify-sign",
+  "_where": "/Users/shuse2/Documents/10_lisk/lisk-js/node_modules/browserify-sign",
   "author": {
     "name": "Fedor Indutny",
     "email": "fedor@indutny.com"
@@ -55012,6 +55020,7 @@ module.exports={
 		"test:watch:min": "npm run test:watch -- --reporter=min",
 		"test:node": "npm run build:check && BABEL_ENV=buildcheck mocha test --recursive",
 		"test:browser": "cypress run --env ROOT_DIR=\"${PWD##*/}\"",
+		"test:browser:headed": "npm run test:browser -- --headed",
 		"cover": "if [ -z $JENKINS_HOME ]; then npm run cover:local; else npm run cover:ci; fi",
 		"cover:base": "NODE_ENV=test nyc report",
 		"cover:local": "npm run cover:base -- --reporter=html --reporter=text",

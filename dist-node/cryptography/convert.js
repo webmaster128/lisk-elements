@@ -63,6 +63,7 @@ var getFirstEightBytesReversed = exports.getFirstEightBytesReversed = function g
 };
 
 var toAddress = exports.toAddress = function toAddress(buffer) {
+	if (!Buffer.from(buffer).slice(0, 8).equals(buffer)) throw new Error('The buffer for Lisk addresses must not have more than 8 bytes');
 	return bufferToBigNumberString(buffer) + 'L';
 };
 

@@ -20,9 +20,26 @@ var _popsicle = require('popsicle');
 
 var popsicle = _interopRequireWildcard(_popsicle);
 
+var _constants = require('./constants');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/*
+ * Copyright © 2017 Lisk Foundation
+ *
+ * See the LICENSE file at the top-level directory of this distribution
+ * for licensing information.
+ *
+ * Unless otherwise agreed in a custom licensing agreement with the Lisk Foundation,
+ * no part of this software, including this file, may be copied, modified,
+ * propagated, or distributed except according to the terms contained in the
+ * LICENSE file.
+ *
+ * Removal or modification of this copyright notice is prohibited.
+ *
+ */
 
 var APIResource = function () {
 	function APIResource(apiClient) {
@@ -40,20 +57,22 @@ var APIResource = function () {
 		value: function request(req, retry) {
 			var _this = this;
 
+			var retryCount = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+
 			var request = popsicle.request(req).use(popsicle.plugins.parse(['json', 'urlencoded'])).then(function (res) {
 				return res.body;
 			});
 
 			if (retry) {
 				request.catch(function (err) {
-					return _this.handleRetry(err, req);
+					return _this.handleRetry(err, req, retryCount);
 				});
 			}
 			return request;
 		}
 	}, {
 		key: 'handleRetry',
-		value: function handleRetry(error, req) {
+		value: function handleRetry(error, req, retryCount) {
 			var _this2 = this;
 
 			if (this.apiClient.hasAvailableNodes()) {
@@ -62,15 +81,13 @@ var APIResource = function () {
 				}).then(function () {
 					if (_this2.apiClient.randomizeNodes) {
 						_this2.apiClient.banActiveNodeAndSelect();
+					} else if (retryCount > _constants.API_RECONNECT_MAX_RETRY_COUNT) {
+						throw error;
 					}
-					return _this2.request(req, true);
+					return _this2.request(req, true, retryCount + 1);
 				});
 			}
-			return _promise2.default.resolve({
-				success: false,
-				error: error,
-				message: 'Could not create an HTTP request to any known nodes.'
-			});
+			return _promise2.default.reject(error);
 		}
 	}, {
 		key: 'headers',
@@ -84,19 +101,6 @@ var APIResource = function () {
 		}
 	}]);
 	return APIResource;
-}(); /*
-      * Copyright © 2017 Lisk Foundation
-      *
-      * See the LICENSE file at the top-level directory of this distribution
-      * for licensing information.
-      *
-      * Unless otherwise agreed in a custom licensing agreement with the Lisk Foundation,
-      * no part of this software, including this file, may be copied, modified,
-      * propagated, or distributed except according to the terms contained in the
-      * LICENSE file.
-      *
-      * Removal or modification of this copyright notice is prohibited.
-      *
-      */
+}();
 
 exports.default = APIResource;

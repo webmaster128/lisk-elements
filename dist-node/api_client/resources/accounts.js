@@ -46,13 +46,13 @@ var AccountsResource = function (_APIResource) {
 			method: _constants.GET
 		}).bind(_this);
 
-		_this.getMultisignatureGroup = (0, _api_method2.default)({
+		_this.getMultisignatureGroups = (0, _api_method2.default)({
 			method: _constants.GET,
 			path: '/{address}/multisignature_groups',
 			urlParams: ['address']
 		}).bind(_this);
 
-		_this.getMultisignatureMembership = (0, _api_method2.default)({
+		_this.getMultisignatureMemberships = (0, _api_method2.default)({
 			method: _constants.GET,
 			path: '/{address}/multisignature_memberships',
 			urlParams: ['address']
