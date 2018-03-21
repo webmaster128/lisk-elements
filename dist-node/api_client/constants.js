@@ -20,3 +20,4 @@ Object.defineProperty(exports, "__esModule", {
 var GET = exports.GET = 'GET';
 var POST = exports.POST = 'POST';
 var PUT = exports.PUT = 'PUT';
+var API_RECONNECT_MAX_RETRY_COUNT = exports.API_RECONNECT_MAX_RETRY_COUNT = 3;

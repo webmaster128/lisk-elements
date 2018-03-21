@@ -59,9 +59,9 @@ var DelegatesResource = function (_APIResource) {
 			path: '/forgers'
 		}).bind(_this);
 
-		_this.getForgingStats = (0, _api_method2.default)({
+		_this.getForgingStatistics = (0, _api_method2.default)({
 			method: _constants.GET,
-			path: '/{address}/forging_stats',
+			path: '/{address}/forging_statistics',
 			urlParams: ['address']
 		}).bind(_this);
 		return _this;
