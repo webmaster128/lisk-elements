@@ -483,6 +483,12 @@ var APIResource = function () {
 			var retryCount = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
 
 			var request = popsicle.request(req).use(popsicle.plugins.parse(['json', 'urlencoded'])).then(function (res) {
+				if (res.status >= 300) {
+					if (res.body && res.body.message) {
+						throw new Error('Status ' + res.status + ' : ' + res.body.message);
+					}
+					throw new Error('Status ' + res.status + ' : An unknown error has occurred.');
+				}
 				return res.body;
 			});
 
